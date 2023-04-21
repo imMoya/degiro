@@ -12,10 +12,10 @@ class Pipeline:
 
     def run_pipeline(self, out_path):
         processor = DatasetProcessor(self.path)
-        print(processor.data)
         for step in self.pipeline:
             method, args, kwargs = step
             method(processor, *args, **kwargs)
+        print(processor.data)
         processor.data.to_csv(out_path, index=False)
         #print(self.processor.data)
 

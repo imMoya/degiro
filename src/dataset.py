@@ -22,6 +22,7 @@ class DatasetProcessor:
     def drop_na(self, col_name):
         self.data.dropna(subset=[col_name], inplace=True)
 
+    @staticmethod
     def split_string(string):
         if string.startswith('Compra') or string.startswith('Venta'):
             split_row = string.split("@")
@@ -46,7 +47,7 @@ class DatasetProcessor:
         self.data[col_name].replace(string_1, string_2, inplace=True)
 
     def date_and_hour_transform(self, date_col, hour_col):
-        self.data['Date'] = pd.to_datetime(self.data[date_col] + ' ' + self.date[hour_col], format='%d-%m-%Y %H:%M')
+        self.data['Date'] = pd.to_datetime(self.data[date_col] + ' ' + self.data[hour_col], format='%d-%m-%Y %H:%M')
         self.drop_col([date_col, hour_col])
 
     def save_data(self, out_path):
