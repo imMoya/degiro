@@ -19,6 +19,7 @@ if __name__ == "__main__":
     pipeline.add_step(DatasetProcessor.convert_to_float, 'Unnamed: 10')
     pipeline.add_step(DatasetProcessor.convert_to_float, 'Price')
     pipeline.add_step(DatasetProcessor.convert_to_float, 'Number')
+    pipeline.add_step(DatasetProcessor.copy_col, '')
     pipeline.run_pipeline(out_path="data/data.csv")
     # Computing taxes
 

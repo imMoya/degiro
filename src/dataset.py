@@ -15,6 +15,9 @@ class DatasetProcessor:
 
     def drop_col(self, col_name):
         self.data.drop(col_name, axis=1, inplace=True)
+    
+    def copy_col(self, col_name, new_col_name):
+        self.data[new_col_name] = self.data[col_name]
 
     def rename_col(self, col_name, new_col_name):
         self.data.rename(columns = {col_name:new_col_name}, inplace=True)
