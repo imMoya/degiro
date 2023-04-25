@@ -2,6 +2,7 @@
 import pandas as pd
 from src.dataset import DatasetProcessor
 
+
 class Pipeline:
     def __init__(self, path):
         self.path = path
@@ -15,7 +16,5 @@ class Pipeline:
         for step in self.pipeline:
             method, args, kwargs = step
             method(processor, *args, **kwargs)
-        print(processor.data)
         processor.data.to_csv(out_path, index=False)
-        #print(self.processor.data)
-
+        return processor.data

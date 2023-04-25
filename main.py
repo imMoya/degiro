@@ -1,10 +1,11 @@
-from src import DatasetProcessor, Pipeline
+import pandas as pd
+from src import DatasetProcessor, Pipeline, ReturnCalculator, DataCols
 
 if __name__ == "__main__":
     path = "data/Account.csv"
-    
+
     pipeline = Pipeline(path)
-    # Cleaning pipeline
+    # Creating pipeline
     pipeline.add_step(DatasetProcessor.replace_commas, "Unnamed: 8")
     pipeline.add_step(DatasetProcessor.replace_commas, "Unnamed: 10")
     pipeline.add_step(DatasetProcessor.rename_col, 'Producto', 'Name')
@@ -19,7 +20,9 @@ if __name__ == "__main__":
     pipeline.add_step(DatasetProcessor.convert_to_float, 'Unnamed: 10')
     pipeline.add_step(DatasetProcessor.convert_to_float, 'Price')
     pipeline.add_step(DatasetProcessor.convert_to_float, 'Number')
-    pipeline.add_step(DatasetProcessor.copy_col, '')
-    pipeline.run_pipeline(out_path="data/data.csv")
-    # Computing taxes
-
+    # Running pipeline
+    df = pipeline.run_pipeline(out_path="data/data.csv")
+    # Computing returns
+    #df = pd.read_csv("data/data.csv")
+    RetCalc = ReturnCalculator(data=df, cols=DataCols)
+    print(RetCalc.return_on_stock(stock='ALIBABA GROUP HOLDING', end_date='31-12-2022'))

@@ -1,3 +1,4 @@
+"Computes return on pandas dataframe containing stock movements"
 import pandas as pd
 from dataclasses import dataclass
 
@@ -21,11 +22,22 @@ class ReturnCalculator:
         self.data = data
         self.cols = cols
 
-    def return_on_stock(self, stock: str):
-        df = self.data[self.data[self.cols.name] = stock].copy()
+    def return_on_stock(self, stock: str, start_date=None, end_date=None):
+        if start_date is not None:
+            start_date = pd.to_datetime(start_date + "00:00", format="%d-%m-%Y%H:%M")
+        if end_date is not None:
+            end_date = pd.to_datetime(end_date + "23:59", format="%d-%m-%Y%H:%M")
+
+        df = self.data[self.data[self.cols.name] == stock].copy()
+        
+        if start_date is not None:
+            df = df[df[self.cols.date] >= start_date]
+        if end_date is not None:
+            df = df[df[self.cols.date] <= end_date]
+        
         df['Amount'] = df[self.cols.number] * df[self.cols.price]
         df['Shares Sold'] = 0
-
+        
         df.sort_values(by=self.cols.date, inplace=True)
 
         for _, row in df.iterrows():
@@ -44,7 +56,6 @@ class ReturnCalculator:
                         
                 df.loc[df.index == row.name, 'Shares Sold'] = shares_to_sell
 
-        # calculate total amount invested and received
         total_invested = df[(df[self.cols.action] == 'buy') & (df['Shares Sold'] > 0)]['Amount'].sum()
         total_received = df[(df[self.cols.action] == 'sell') & (df['Shares Sold'] > 0)]['Amount'].sum()
         return_stock = total_received - total_invested
