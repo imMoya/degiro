@@ -23,7 +23,7 @@ class DataCols:
 class ReturnCalculator:
     def __init__(self, data: pd.DataFrame, cols: type):
         self.data = data
-        self.cols = cols
+        self.cols: DataCols = cols
 
     def return_on_stock(self, stock: str, start_date=None, end_date=None):
         if start_date is not None:

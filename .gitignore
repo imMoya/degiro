@@ -4,4 +4,4 @@ data/
 *ipynb
 **/*ipynb*
 **/__pycache__/
-
+.mypy_cache/
