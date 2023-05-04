@@ -1,5 +1,10 @@
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
+
 import pandas as pd
-from src import DatasetProcessor, Pipeline, ReturnCalculator, DataCols
+from degiro_app import DatasetProcessor, Pipeline, ReturnCalculator, DataCols
 
 if __name__ == "__main__":
     path = "data/Account.csv"

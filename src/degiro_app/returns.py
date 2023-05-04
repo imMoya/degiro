@@ -1,7 +1,8 @@
 "Computes return on pandas dataframe containing stock movements"
-import pandas as pd
 from dataclasses import dataclass
 from datetime import timedelta
+
+import pandas as pd
 
 
 @dataclass
