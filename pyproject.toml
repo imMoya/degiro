@@ -1,3 +1,29 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "degiro_app"
+authors = [{name = "Ignacio Moya", email = "imoyared@gmail.com"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dynamic = ["version", "description"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.urls]
+Home = "https://github.com/imMoya"
+
+[tool.kedro]
+package_name = "degiro_app"
+project_name = "degiro_app"
+kedro_init_version = "0.18.8"
+
 [tool.isort]
 profile = "black"
 
