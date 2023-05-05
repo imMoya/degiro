@@ -1,21 +1,3 @@
-[tool.poetry]
-name = "degiro-app"
-version = "0.1.0"
-description = ""
-authors = ["Ignacio Moya <imoyared@gmail.com>"]
-readme = "README.md"
-packages = [{include = "degiro_app"}]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-
-
-[tool.poetry.group.lint.dependencies]
-isort = "^5.12.0"
-black = "^23.3.0"
-flake8 = "^6.0.0"
-mypy = "^1.2.0"
-
 [tool.isort]
 profile = "black"
 
@@ -44,6 +26,6 @@ warn_unreachable = true
 # Misc
 pretty = true
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.black]
+line-length = 88
+include = '\.pyi?$'

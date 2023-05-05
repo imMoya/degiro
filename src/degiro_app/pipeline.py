@@ -1,5 +1,6 @@
 """Class to postprocess and clean dataset"""
 import pandas as pd
+
 from degiro_app.dataset import DatasetProcessor
 
 
