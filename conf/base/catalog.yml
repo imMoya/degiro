@@ -2,6 +2,18 @@ degiro_app-account-raw:
   type: pandas.CSVDataSet
   filepath: data/01_raw/Account.csv
 
-degiro_app-account-desc_split:
+degiro_app-account-clean:
   type: pandas.CSVDataSet
-  filepath: data/02_intermediate/account_desc_split.csv
+  filepath: data/03_clean/account_clean.csv
+
+stock: 
+  type: MemoryDataSet
+  data: "ALIBABA GROUP HOLDING"
+
+start_date: 
+  type: MemoryDataSet
+  data: "01-01-2020"
+
+end_date: 
+  type: MemoryDataSet
+  data: "31-12-2022"

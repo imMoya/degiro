@@ -5,6 +5,8 @@ generated using Kedro 0.18.8
 
 import pandas as pd
 from dataclasses import dataclass
+from datetime import timedelta
+from typing import Optional
 
 
 # Node Auxiliary Class and Methods
@@ -69,7 +71,7 @@ def split_string(string: str, cols=DataCols) -> pd.Series:
         )
 
 
-def type_converter(df: pd.DataFrame, cols=DataCols) -> pd.DataFrame:
+def type_converter(df: pd.DataFrame, cols: DataCols = DataCols) -> pd.DataFrame:
     """
     Defines type conversions of dataframe columns
     """
@@ -82,10 +84,77 @@ def type_converter(df: pd.DataFrame, cols=DataCols) -> pd.DataFrame:
     return df
 
 
-# Node Functions used
+# -----------------------------------------
+# -------------- Clean node ---------------
+# -----------------------------------------
 def split_description(df: pd.DataFrame, cols=DataCols) -> pd.DataFrame:
     df = type_converter(df)
     df[[cols.action, cols.number, cols.price, cols.pricecur]] = df[cols.desc].apply(
         split_string
     )
     return df
+
+
+# -----------------------------------------
+# ------------- Return node ---------------
+# -----------------------------------------
+
+
+def return_on_stock(
+    df: pd.DataFrame,
+    stock: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    cols: DataCols = DataCols,
+) -> float:
+    df = df[df[cols.product] == stock].copy()
+
+    if start_date is not None:
+        df = df[df[cols.value_date] >= start_date]
+    if end_date is not None:
+        df = df[df[cols.value_date] <= end_date]
+
+    df["Amount"] = df[cols.number] * df[cols.price]
+    df["Shares Sold"] = 0
+    df["2M Conflict"] = False
+    return_stock = 0
+
+    df.sort_values(by=cols.value_date, inplace=True)
+
+    for _, row in df.iterrows():
+        if row[cols.action] == "sell":
+            shares_to_sell = row[cols.number]
+            shares_sold_so_far = 0
+            shares_bought = []
+
+            for _, buy_row in df.loc[
+                (df[cols.action] == "buy") & (df["Shares Sold"] < df[cols.number])
+            ].iterrows():
+                shares_available = buy_row[cols.number] - buy_row["Shares Sold"]
+                shares_sold = min(shares_to_sell - shares_sold_so_far, shares_available)
+                shares_sold_so_far += shares_sold
+                df.loc[df.index == buy_row.name, "Shares Sold"] += shares_sold
+                shares_bought.append([shares_sold, buy_row[cols.price]])
+
+                if shares_sold_so_far >= shares_to_sell:
+                    break
+
+            df.loc[df.index == row.name, "Shares Sold"] = shares_to_sell
+
+            bought_amount = sum([x[0] * x[1] for x in shares_bought])
+            sell_amount = row["Amount"]
+            return_of_sale = sell_amount - bought_amount
+            twomonth_limit = row[cols.value_date] + timedelta(days=60)
+            if (return_of_sale < 0) & (
+                len(
+                    df.loc[
+                        (df[cols.action] == "buy")
+                        & (df[cols.value_date] >= row[cols.value_date])
+                        & (df[cols.value_date] <= twomonth_limit)
+                    ]
+                )
+            ) > 0:
+                pass
+            else:
+                return_stock += return_of_sale
+    return return_stock
