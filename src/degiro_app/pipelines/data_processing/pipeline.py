@@ -4,17 +4,17 @@ generated using Kedro 0.18.8
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import type_converter
+from .nodes import type_converter, split_description
 
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline(
         [
             node(
-                func=type_converter,
-                inputs="degiro_app-acount-raw",
-                outputs="degiro_app-account-type_check",
-                name="type_converted_node",
-            )
+                func=split_description,
+                inputs="degiro_app-account-raw",
+                outputs="degiro_app-account-desc_split",
+                name="split_description_node",
+            ),
         ]
     )

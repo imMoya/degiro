@@ -1,3 +1,7 @@
-degiro_app-acount-raw:
+degiro_app-account-raw:
   type: pandas.CSVDataSet
   filepath: data/01_raw/Account.csv
+
+degiro_app-account-desc_split:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/account_desc_split.csv
