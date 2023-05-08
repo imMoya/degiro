@@ -6,6 +6,10 @@ degiro_app-account-clean:
   type: pandas.CSVDataSet
   filepath: data/03_clean/account_clean.csv
 
+stock_summary:
+  type: pandas.CSVDataSet
+  filepath: data/05_output/summary.csv
+
 stock: 
   type: MemoryDataSet
   data: "ALIBABA GROUP HOLDING"

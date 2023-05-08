@@ -64,7 +64,7 @@ def split_string(string: str, cols=DataCols) -> pd.Series:
         )
 
 
-def type_converter(df: pd.DataFrame, cols: type = DataCols) -> pd.DataFrame:
+def type_converter(df: pd.DataFrame, cols: DataCols = DataCols) -> pd.DataFrame:
     """
     Defines type conversions of dataframe columns
     """
@@ -103,8 +103,6 @@ def split_description(df: pd.DataFrame, cols=DataCols) -> pd.DataFrame:
 # -----------------------------------------
 # ------------- Return node ---------------
 # -----------------------------------------
-
-
 def return_on_stock(
     df: pd.DataFrame,
     stock: str,
@@ -167,3 +165,83 @@ def return_on_stock(
             else:
                 return_stock += return_of_sale
     return return_stock
+
+
+def return_on_stock_complete(
+    df: pd.DataFrame,
+    stock: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    cols: DataCols = DataCols,
+) -> float:
+    df_summary = pd.DataFrame(columns=df.columns)
+    print(df_summary)
+    df = type_converter(df)
+    df = df[df[cols.product] == stock].copy()
+
+    if start_date is not None:
+        df = df[df[cols.value_date] >= start_date]
+    if end_date is not None:
+        df = df[df[cols.value_date] <= end_date]
+
+    df["Amount"] = df[cols.number] * df[cols.price]
+    df["Shares Sold"] = 0
+    df["2M Conflict"] = False
+    return_stock = 0
+
+    df.sort_values(by=cols.value_date, inplace=True)
+
+    for _, row in df.iterrows():
+        if row[cols.action] == "sell":
+            # print(row)
+            row["Amount EUR"] = df[cols.var][
+                (df[cols.id_order]) == row[cols.id_order]
+            ].sum()
+            df_summary = pd.concat([df_summary, pd.DataFrame([row])], ignore_index=True)
+            shares_to_sell = row[cols.number]
+            shares_sold_so_far = 0
+            shares_bought = []
+
+            for _, buy_row in df.loc[
+                (df[cols.action] == "buy") & (df["Shares Sold"] < df[cols.number])
+            ].iterrows():
+                row_df = pd.DataFrame([buy_row])
+                shares_available = buy_row[cols.number] - buy_row["Shares Sold"]
+                shares_sold = min(shares_to_sell - shares_sold_so_far, shares_available)
+                shares_sold_so_far += shares_sold
+                df.loc[df.index == buy_row.name, "Shares Sold"] += shares_sold
+                shares_bought.append([shares_sold, buy_row[cols.price]])
+                buy_row["Shares Sold"] = shares_sold
+
+                buy_row["Amount EUR"] = df[cols.var][
+                    (df[cols.id_order]) == buy_row[cols.id_order]
+                ].sum()
+                df_summary = pd.concat(
+                    [df_summary, pd.DataFrame([buy_row])], ignore_index=True
+                )
+
+                if shares_sold_so_far >= shares_to_sell:
+                    break
+
+            df.loc[df.index == row.name, "Shares Sold"] = shares_to_sell
+
+            bought_amount = sum([x[0] * x[1] for x in shares_bought])
+            sell_amount = row["Amount"]
+            return_of_sale = sell_amount - bought_amount
+            twomonth_limit = datetime.strptime(
+                row[cols.value_date], "%d-%m-%Y"
+            ) + timedelta(days=60)
+            twomonth_limit = twomonth_limit.strftime("%d-%m-%Y")
+            if (return_of_sale < 0) & (
+                len(
+                    df.loc[
+                        (df[cols.action] == "buy")
+                        & (df[cols.value_date] >= row[cols.value_date])
+                        & (df[cols.value_date] <= twomonth_limit)
+                    ]
+                )
+            ) > 0:
+                pass
+            else:
+                return_stock += return_of_sale
+    return df_summary
