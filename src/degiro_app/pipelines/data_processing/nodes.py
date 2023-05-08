@@ -5,7 +5,7 @@ generated using Kedro 0.18.8
 
 import pandas as pd
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Optional
 
 
@@ -34,13 +34,6 @@ class DataCols:
     pricecur: str = "Price Currency"
 
 
-def map_string(string: str, mapping: dict) -> str:
-    """
-    Replaces a string through a mapping
-    """
-    return "".join(mapping.get(c, c) for c in string)
-
-
 def split_string(string: str, cols=DataCols) -> pd.Series:
     """
     Splits a string and returns a pandas Series with a split
@@ -54,9 +47,9 @@ def split_string(string: str, cols=DataCols) -> pd.Series:
         split_row = string.split("@")
         return pd.Series(
             {
-                cols.action: map_string(split_row[0].split()[0], mapping),
-                cols.number: split_row[0].split()[1],
-                cols.price: split_row[1].split()[0].replace(",", "."),
+                cols.action: mapping.get(split_row[0].split()[0]),
+                cols.number: float(split_row[0].split()[1]),
+                cols.price: float(split_row[1].split()[0].replace(",", ".")),
                 cols.pricecur: split_row[1].split()[1],
             }
         )
@@ -71,15 +64,27 @@ def split_string(string: str, cols=DataCols) -> pd.Series:
         )
 
 
-def type_converter(df: pd.DataFrame, cols: DataCols = DataCols) -> pd.DataFrame:
+def type_converter(df: pd.DataFrame, cols: type = DataCols) -> pd.DataFrame:
     """
     Defines type conversions of dataframe columns
     """
-    df[cols.reg_date] = pd.to_datetime(df[cols.reg_date], format="%d-%m-%Y")
-    df[cols.reg_hour] = pd.to_datetime(df[cols.reg_hour], format="%H:%M").dt.time
-    df[cols.value_date] = pd.to_datetime(df[cols.value_date], format="%d-%m-%Y")
-    df[cols.var] = pd.to_numeric(df[cols.var].str.replace(",", "."), errors="coerce")
-    df[cols.cash] = pd.to_numeric(df[cols.cash].str.replace(",", "."), errors="coerce")
+    df[cols.reg_date] = pd.to_datetime(
+        df[cols.reg_date], format="%d-%m-%Y"
+    ).dt.strftime("%d-%m-%Y")
+    df[cols.reg_hour] = pd.to_datetime(df[cols.reg_hour], format="%H:%M").dt.strftime(
+        "%H:%M"
+    )
+    df[cols.value_date] = pd.to_datetime(
+        df[cols.value_date], format="%d-%m-%Y"
+    ).dt.strftime("%d-%m-%Y")
+    if df[cols.var].dtype != float:
+        df[cols.var] = pd.to_numeric(
+            df[cols.var].str.replace(",", "."), errors="coerce"
+        )
+    if df[cols.cash].dtype != float:
+        df[cols.cash] = pd.to_numeric(
+            df[cols.cash].str.replace(",", "."), errors="coerce"
+        )
     df[cols.desc] = df[cols.desc].astype(str)
     return df
 
@@ -107,6 +112,7 @@ def return_on_stock(
     end_date: Optional[str] = None,
     cols: DataCols = DataCols,
 ) -> float:
+    df = type_converter(df)
     df = df[df[cols.product] == stock].copy()
 
     if start_date is not None:
@@ -144,7 +150,10 @@ def return_on_stock(
             bought_amount = sum([x[0] * x[1] for x in shares_bought])
             sell_amount = row["Amount"]
             return_of_sale = sell_amount - bought_amount
-            twomonth_limit = row[cols.value_date] + timedelta(days=60)
+            twomonth_limit = datetime.strptime(
+                row[cols.value_date], "%d-%m-%Y"
+            ) + timedelta(days=60)
+            twomonth_limit = twomonth_limit.strftime("%d-%m-%Y")
             if (return_of_sale < 0) & (
                 len(
                     df.loc[
