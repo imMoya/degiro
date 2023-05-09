@@ -34,7 +34,7 @@ class DataCols:
     pricecur: str = "Price Currency"
 
 
-def split_string(string: str, cols=DataCols) -> pd.Series:
+def split_string(string: str, cols: DataCols = DataCols()) -> pd.Series:
     """
     Splits a string and returns a pandas Series with a split
     - action: 'buy' or 'sell'
@@ -64,7 +64,7 @@ def split_string(string: str, cols=DataCols) -> pd.Series:
         )
 
 
-def type_converter(df: pd.DataFrame, cols: DataCols = DataCols) -> pd.DataFrame:
+def type_converter(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFrame:
     """
     Defines type conversions of dataframe columns
     """
@@ -92,7 +92,7 @@ def type_converter(df: pd.DataFrame, cols: DataCols = DataCols) -> pd.DataFrame:
 # -----------------------------------------
 # -------------- Clean node ---------------
 # -----------------------------------------
-def split_description(df: pd.DataFrame, cols=DataCols) -> pd.DataFrame:
+def split_description(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFrame:
     df = type_converter(df)
     df[[cols.action, cols.number, cols.price, cols.pricecur]] = df[cols.desc].apply(
         split_string
@@ -108,7 +108,7 @@ def return_on_stock(
     stock: str,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    cols: DataCols = DataCols,
+    cols: DataCols = DataCols(),
 ) -> float:
     df = type_converter(df)
     df = df[df[cols.product] == stock].copy()
@@ -151,13 +151,13 @@ def return_on_stock(
             twomonth_limit = datetime.strptime(
                 row[cols.value_date], "%d-%m-%Y"
             ) + timedelta(days=60)
-            twomonth_limit = twomonth_limit.strftime("%d-%m-%Y")
+            twomonth_date = twomonth_limit.strftime("%d-%m-%Y")
             if (return_of_sale < 0) & (
                 len(
                     df.loc[
                         (df[cols.action] == "buy")
                         & (df[cols.value_date] >= row[cols.value_date])
-                        & (df[cols.value_date] <= twomonth_limit)
+                        & (df[cols.value_date] <= twomonth_date)
                     ]
                 )
             ) > 0:
@@ -172,8 +172,8 @@ def return_on_stock_complete(
     stock: str,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    cols: DataCols = DataCols,
-) -> float:
+    cols: DataCols = DataCols(),
+) -> pd.DataFrame:
     df_summary = pd.DataFrame(columns=df.columns)
     print(df_summary)
     df = type_converter(df)
@@ -231,13 +231,13 @@ def return_on_stock_complete(
             twomonth_limit = datetime.strptime(
                 row[cols.value_date], "%d-%m-%Y"
             ) + timedelta(days=60)
-            twomonth_limit = twomonth_limit.strftime("%d-%m-%Y")
+            twomonth_date = twomonth_limit.strftime("%d-%m-%Y")
             if (return_of_sale < 0) & (
                 len(
                     df.loc[
                         (df[cols.action] == "buy")
                         & (df[cols.value_date] >= row[cols.value_date])
-                        & (df[cols.value_date] <= twomonth_limit)
+                        & (df[cols.value_date] <= twomonth_date)
                     ]
                 )
             ) > 0:
