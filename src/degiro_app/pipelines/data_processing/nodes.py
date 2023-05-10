@@ -5,7 +5,7 @@ generated using Kedro 0.18.8
 
 import pandas as pd
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Optional
 
 
@@ -68,15 +68,9 @@ def type_converter(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFram
     """
     Defines type conversions of dataframe columns
     """
-    df[cols.reg_date] = pd.to_datetime(
-        df[cols.reg_date], format="%d-%m-%Y"
-    ).dt.strftime("%d-%m-%Y")
-    df[cols.reg_hour] = pd.to_datetime(df[cols.reg_hour], format="%H:%M").dt.strftime(
-        "%H:%M"
-    )
-    df[cols.value_date] = pd.to_datetime(
-        df[cols.value_date], format="%d-%m-%Y"
-    ).dt.strftime("%d-%m-%Y")
+    df[cols.reg_date] = pd.to_datetime(df[cols.reg_date])
+    df[cols.reg_hour] = pd.to_datetime(df[cols.reg_hour])
+    df[cols.value_date] = pd.to_datetime(df[cols.value_date])
     if df[cols.var].dtype != float:
         df[cols.var] = pd.to_numeric(
             df[cols.var].str.replace(",", "."), errors="coerce"
@@ -148,10 +142,7 @@ def return_on_stock(
             bought_amount = sum([x[0] * x[1] for x in shares_bought])
             sell_amount = row["Amount"]
             return_of_sale = sell_amount - bought_amount
-            twomonth_limit = datetime.strptime(
-                row[cols.value_date], "%d-%m-%Y"
-            ) + timedelta(days=60)
-            twomonth_date = twomonth_limit.strftime("%d-%m-%Y")
+            twomonth_limit = pd.Timestamp(row[cols.value_date] + timedelta(days=60))
             if (return_of_sale < 0) & (
                 len(
                     df.loc[
@@ -175,7 +166,6 @@ def return_on_stock_complete(
     cols: DataCols = DataCols(),
 ) -> pd.DataFrame:
     df_summary = pd.DataFrame(columns=df.columns)
-    print(df_summary)
     df = type_converter(df)
     df = df[df[cols.product] == stock].copy()
 
@@ -205,7 +195,6 @@ def return_on_stock_complete(
             for _, buy_row in df.loc[
                 (df[cols.action] == "buy") & (df["Shares Sold"] < df[cols.number])
             ].iterrows():
-                row_df = pd.DataFrame([buy_row])
                 shares_available = buy_row[cols.number] - buy_row["Shares Sold"]
                 shares_sold = min(shares_to_sell - shares_sold_so_far, shares_available)
                 shares_sold_so_far += shares_sold
@@ -228,16 +217,13 @@ def return_on_stock_complete(
             bought_amount = sum([x[0] * x[1] for x in shares_bought])
             sell_amount = row["Amount"]
             return_of_sale = sell_amount - bought_amount
-            twomonth_limit = datetime.strptime(
-                row[cols.value_date], "%d-%m-%Y"
-            ) + timedelta(days=60)
-            twomonth_date = twomonth_limit.strftime("%d-%m-%Y")
+            twomonth_limit = pd.Timestamp(row[cols.value_date] + timedelta(days=60))
             if (return_of_sale < 0) & (
                 len(
                     df.loc[
                         (df[cols.action] == "buy")
                         & (df[cols.value_date] >= row[cols.value_date])
-                        & (df[cols.value_date] <= twomonth_date)
+                        & (df[cols.value_date] <= twomonth_limit)
                     ]
                 )
             ) > 0:
