@@ -148,7 +148,7 @@ def return_on_stock(
                     df.loc[
                         (df[cols.action] == "buy")
                         & (df[cols.value_date] >= row[cols.value_date])
-                        & (df[cols.value_date] <= twomonth_date)
+                        & (df[cols.value_date] <= twomonth_limit)
                     ]
                 )
             ) > 0:
