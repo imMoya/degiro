@@ -83,11 +83,31 @@ def type_converter(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFram
     return df
 
 
+def fix_orphan_ids(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFrame:
+    """
+    Filters out all rows which are orphan (sometimes the order id is splitted into
+    two columns)
+    """
+    length_idorder = len("da6f08da-40d6-437e-b721-cd3456f89950")
+    df_fixed = df[
+        (df[cols.id_order].notnull()) & (df[cols.id_order].str.len() < length_idorder)
+    ]
+    orphan_rows = []
+    for _, row in df_fixed.iterrows():
+        if row[cols.id_order][8] != "-":
+            orphan_rows.append(row.name)
+    for orphan_row in orphan_rows:
+        df[cols.id_order].loc[orphan_row - 1] += df[cols.id_order].loc[orphan_row]
+    df.drop(orphan_rows, inplace=True)
+    return df
+
+
 # -----------------------------------------
 # -------------- Clean node ---------------
 # -----------------------------------------
 def split_description(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFrame:
     df = type_converter(df)
+    df = fix_orphan_ids(df)
     df[[cols.action, cols.number, cols.price, cols.pricecur]] = df[cols.desc].apply(
         split_string
     )
@@ -183,7 +203,6 @@ def return_on_stock_complete(
 
     for _, row in df.iterrows():
         if row[cols.action] == "sell":
-            # print(row)
             row["Amount EUR"] = df[cols.var][
                 (df[cols.id_order]) == row[cols.id_order]
             ].sum()
