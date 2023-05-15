@@ -219,7 +219,7 @@ def return_on_stock_complete(
             df_summary = pd.concat([df_summary, pd.DataFrame([row])], ignore_index=True)
             shares_to_sell = row[cols.number]
             shares_sold_so_far = 0
-            shares_bought = []
+            bought_amount = []
 
             for _, buy_row in df.loc[
                 (df[cols.action] == "buy") & (df["Shares Sold"] < df[cols.number])
@@ -228,11 +228,16 @@ def return_on_stock_complete(
                 shares_sold = min(shares_to_sell - shares_sold_so_far, shares_available)
                 shares_sold_so_far += shares_sold
                 df.loc[df.index == buy_row.name, "Shares Sold"] += shares_sold
-                shares_bought.append([shares_sold, buy_row[cols.price]])
                 buy_row["Shares Sold"] = shares_sold
-
-                buy_row["Amount EUR"] = df[cols.var][
-                    (df[cols.id_order]) == buy_row[cols.id_order]
+                buy_row["Amount EUR"] = (
+                    df[cols.var][df[cols.id_order] == buy_row[cols.id_order]].sum()
+                    * shares_sold
+                    / buy_row["Number"]
+                )
+                bought_amount.append(buy_row["Amount EUR"])
+                buy_row["Amount Cost EUR"] = df[cols.var][
+                    (df[cols.id_order] == buy_row[cols.id_order])
+                    & (df[cols.desc].str.contains("Costes"))
                 ].sum()
                 df_summary = pd.concat(
                     [df_summary, pd.DataFrame([buy_row])], ignore_index=True
@@ -243,7 +248,7 @@ def return_on_stock_complete(
 
             df.loc[df.index == row.name, "Shares Sold"] = shares_to_sell
 
-            bought_amount = sum([x[0] * x[1] for x in shares_bought])
+            bought_amount = sum([x for x in bought_amount])
             sell_amount = row["Amount"]
             return_of_sale = sell_amount - bought_amount
             twomonth_limit = pd.Timestamp(row[cols.value_date] + timedelta(days=60))
