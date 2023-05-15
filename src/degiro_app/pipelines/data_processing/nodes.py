@@ -53,6 +53,16 @@ def split_string(string: str, cols: DataCols = DataCols()) -> pd.Series:
                 cols.pricecur: split_row[1].split()[1],
             }
         )
+    elif string.startswith("VENCIMIENTO"):
+        split_row = string.split(": ")[1].split("@")
+        return pd.Series(
+            {
+                cols.action: mapping.get(split_row[0].split()[0]),
+                cols.number: float(split_row[0].split()[1]),
+                cols.price: float(split_row[1].split()[0].replace(",", ".")),
+                cols.pricecur: split_row[1].split()[1],
+            }
+        )
     else:
         return pd.Series(
             {
