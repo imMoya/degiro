@@ -4,7 +4,12 @@ generated using Kedro 0.18.8
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import split_description, return_on_stock_complete, return_portfolio
+from .nodes import (
+    split_description,
+    return_on_stock_complete,
+    return_portfolio,
+    return_dividends,
+)
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -27,6 +32,12 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs=["degiro_app-account-clean"],
                 outputs="portfolio_summary",
                 name="return_on_portfolio_node",
+            ),
+            node(
+                func=return_dividends,
+                inputs=["degiro_app-account-clean"],
+                outputs="dividends_summary",
+                name="dividends_node",
             ),
         ]
     )

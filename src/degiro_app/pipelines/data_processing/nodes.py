@@ -273,6 +273,7 @@ def return_portfolio(
     end_date: Optional[str] = None,
     cols: DataCols = DataCols(),
 ) -> pd.DataFrame:
+    df = type_converter(df)
     if start_date is not None:
         df = df[df[cols.value_date] >= start_date]
     if end_date is not None:
@@ -282,3 +283,18 @@ def return_portfolio(
     ].unique()
     global_df = pd.concat([return_on_stock_complete(df, stock) for stock in stock_list])
     return global_df
+
+
+def return_dividends(
+    df: pd.DataFrame,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    cols: DataCols = DataCols(),
+) -> pd.DataFrame:
+    df = type_converter(df)
+    if start_date is not None:
+        df = df[df[cols.value_date] >= start_date]
+    if end_date is not None:
+        df = df[df[cols.value_date] <= end_date]
+    df = df[df[cols.desc].str.contains("ividendo")]
+    return df
