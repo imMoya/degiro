@@ -4,7 +4,7 @@ generated using Kedro 0.18.8
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import split_description, return_on_stock_complete
+from .nodes import split_description, return_on_stock_complete, return_portfolio
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -21,6 +21,12 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs=["degiro_app-account-clean", "stock"],
                 outputs="stock_summary",
                 name="return_on_stock_node",
+            ),
+            node(
+                func=return_portfolio,
+                inputs=["degiro_app-account-clean"],
+                outputs="portfolio_summary",
+                name="return_on_portfolio_node",
             ),
         ]
     )

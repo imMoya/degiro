@@ -269,11 +269,14 @@ def return_on_stock_complete(
 
 def return_portfolio(
     df: pd.DataFrame,
-    stock: str,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     cols: DataCols = DataCols(),
 ) -> pd.DataFrame:
+    if start_date is not None:
+        df = df[df[cols.value_date] >= start_date]
+    if end_date is not None:
+        df = df[df[cols.value_date] <= end_date]
     stock_list = df[cols.product][
         (df[cols.action].str.contains("buy")) | (df[cols.action].str.contains("sell"))
     ].unique()
