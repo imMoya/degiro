@@ -9,5 +9,5 @@ if __name__ == "__main__":
     path = "data/Account.csv"
     df = DataSet(path).data
     print(df)
-    # df_sum = Stocks(df=df).return_on_stock_complete("ALIBABA GROUP HOLDING")
-    # print(df_sum)
+    df_sum = Stocks(df=df).return_on_stock_complete("ALIBABA GROUP HOLDING")
+    print(df_sum)
