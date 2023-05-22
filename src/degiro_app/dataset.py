@@ -1,5 +1,6 @@
-import pandas as pd
 from dataclasses import dataclass
+
+import pandas as pd
 
 
 @dataclass
@@ -27,11 +28,16 @@ class DataCols:
 
 
 class DataSet:
-    def __init__(self, path, fix_orphan: bool = True):
+    def __init__(self, path: str, fix_orphan: bool = True, split_string: bool = True):
         self.path = path
         self.data = self.type_converter(pd.read_csv(self.path))
-        if fix_orphan == True:
+        if fix_orphan is True:
             self.data = self.fix_orphan_ids(self.data)
+        if split_string is True:
+            cols = DataCols()
+            self.data[
+                [cols.action, cols.number, cols.price, cols.pricecur]
+            ] = self.data[cols.desc].apply(self.split_string)
 
     @staticmethod
     def type_converter(df: pd.DataFrame, cols: DataCols = DataCols()) -> pd.DataFrame:
@@ -71,3 +77,43 @@ class DataSet:
             df[cols.id_order].loc[orphan_row - 1] += df[cols.id_order].loc[orphan_row]
         df.drop(orphan_rows, inplace=True)
         return df
+
+    @staticmethod
+    def split_string(string: str, cols: DataCols = DataCols()) -> pd.Series:
+        """
+        Splits a string and returns a pandas Series with a split
+        - action: 'buy' or 'sell'
+        - number: number of shares involved in the movement
+        - price: price of product
+        - pricecur: currency of product
+        """
+        mapping = {"Compra": "buy", "Venta": "sell"}
+        if string.startswith("Compra") or string.startswith("Venta"):
+            split_row = string.split("@")
+            return pd.Series(
+                {
+                    cols.action: mapping.get(split_row[0].split()[0]),
+                    cols.number: float(split_row[0].split()[1]),
+                    cols.price: float(split_row[1].split()[0].replace(",", ".")),
+                    cols.pricecur: split_row[1].split()[1],
+                }
+            )
+        elif string.startswith("VENCIMIENTO"):
+            split_row = string.split(": ")[1].split("@")
+            return pd.Series(
+                {
+                    cols.action: mapping.get(split_row[0].split()[0]),
+                    cols.number: float(split_row[0].split()[1]),
+                    cols.price: float(split_row[1].split()[0].replace(",", ".")),
+                    cols.pricecur: split_row[1].split()[1],
+                }
+            )
+        else:
+            return pd.Series(
+                {
+                    cols.action: None,
+                    cols.number: None,
+                    cols.price: None,
+                    cols.pricecur: None,
+                }
+            )
