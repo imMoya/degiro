@@ -14,6 +14,10 @@ portfolio_summary:
   type: pandas.CSVDataSet
   filepath: data/05_output/summary_portfolio.csv
 
+dividends_summary:
+  type: pandas.CSVDataSet
+  filepath: data/05_output/summary_dividends.csv
+
 stock: 
   type: MemoryDataSet
   data: "ALIBABA GROUP HOLDING"
