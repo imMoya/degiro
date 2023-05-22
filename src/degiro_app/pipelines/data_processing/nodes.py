@@ -3,10 +3,11 @@ This is a boilerplate pipeline 'data_processing'
 generated using Kedro 0.18.8
 """
 
-import pandas as pd
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Optional
+
+import pandas as pd
 
 
 # Node Auxiliary Class and Methods

@@ -4,11 +4,12 @@ generated using Kedro 0.18.8
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
+
 from .nodes import (
-    split_description,
+    return_dividends,
     return_on_stock_complete,
     return_portfolio,
-    return_dividends,
+    split_description,
 )
 
 
