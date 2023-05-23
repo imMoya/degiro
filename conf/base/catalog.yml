@@ -2,6 +2,10 @@ degiro_app-account-raw:
   type: pandas.CSVDataSet
   filepath: data/01_raw/Account.csv
 
+degiro_app-account-raw-path:
+  type: MemoryDataSet
+  data: "data/01_raw/Account.csv"
+
 degiro_app-account-clean:
   type: pandas.CSVDataSet
   filepath: data/03_clean/account_clean.csv

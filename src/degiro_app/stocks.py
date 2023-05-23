@@ -97,3 +97,16 @@ class Stocks:
                 else:
                     return_stock += return_of_sale
         return df_summary
+
+    def return_portfolio(
+        self,
+        cols: DataCols = DataCols(),
+    ) -> pd.DataFrame:
+        stock_list = self.df[cols.product][
+            (self.df[cols.action].str.contains("buy"))
+            | (self.df[cols.action].str.contains("sell"))
+        ].unique()
+        global_df = pd.concat(
+            [self.return_on_stock_complete(stock) for stock in stock_list]
+        )
+        return global_df

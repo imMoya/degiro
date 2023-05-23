@@ -11,3 +11,5 @@ if __name__ == "__main__":
     print(df)
     df_sum = Stocks(df=df).return_on_stock_complete("ALIBABA GROUP HOLDING")
     print(df_sum)
+    df_total = Stocks(df=df).return_portfolio()
+    print(df_total)

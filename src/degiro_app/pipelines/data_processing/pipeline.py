@@ -6,6 +6,7 @@ generated using Kedro 0.18.8
 from kedro.pipeline import Pipeline, node, pipeline
 
 from .nodes import (
+    node_dataset_clean,
     return_dividends,
     return_on_stock_complete,
     return_portfolio,
@@ -17,8 +18,8 @@ def create_pipeline(**kwargs) -> Pipeline:
     return pipeline(
         [
             node(
-                func=split_description,
-                inputs="degiro_app-account-raw",
+                func=node_dataset_clean,
+                inputs="degiro_app-account-raw-path",
                 outputs="degiro_app-account-clean",
                 name="split_description_node",
             ),
