@@ -82,9 +82,9 @@ class Stocks:
 
                 bought_amount = sum([x for x in bought_amount])
                 sell_amount = row["Amount"]
-                return_of_sale = sell_amount - bought_amount
+                return_of_sale = sell_amount + bought_amount
                 twomonth_limit = pd.Timestamp(row[cols.value_date] + timedelta(days=60))
-                if (return_of_sale < 0) & (
+                if (return_of_sale < 0) and (
                     len(
                         df.loc[
                             (df[cols.action] == "buy")
@@ -93,7 +93,9 @@ class Stocks:
                         ]
                     )
                 ) > 0:
-                    pass
+                    df_summary["2M Conflict"].loc[
+                        df_summary[cols.id_order] == row[cols.id_order]
+                    ] = True
                 else:
                     return_stock += return_of_sale
         return df_summary

@@ -9,7 +9,7 @@ if __name__ == "__main__":
     path = "data/Account.csv"
     df = DataSet(path).data
     print(df)
-    df_sum = Stocks(df=df).return_on_stock_complete("ALIBABA GROUP HOLDING")
+    df_sum = Stocks(df=df).return_on_stock_complete("NAGARRO SE")
     print(df_sum)
     df_total = Stocks(df=df).return_portfolio()
-    print(df_total)
+    print(df_total.head(30))

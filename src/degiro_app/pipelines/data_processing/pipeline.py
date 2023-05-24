@@ -7,10 +7,9 @@ from kedro.pipeline import Pipeline, node, pipeline
 
 from .nodes import (
     node_dataset_clean,
+    node_return_portfolio,
     return_dividends,
-    return_on_stock_complete,
     return_portfolio,
-    split_description,
 )
 
 
@@ -22,12 +21,6 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs="degiro_app-account-raw-path",
                 outputs="degiro_app-account-clean",
                 name="split_description_node",
-            ),
-            node(
-                func=return_on_stock_complete,
-                inputs=["degiro_app-account-clean", "stock"],
-                outputs="stock_summary",
-                name="return_on_stock_node",
             ),
             node(
                 func=return_portfolio,

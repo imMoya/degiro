@@ -23,6 +23,10 @@ def node_dataset_clean(path: str) -> pd.DataFrame:
     return DataSet(path).data
 
 
+def node_return_portfolio(df: pd.DataFrame) -> pd.DataFrame:
+    return Stocks(df=df).return_portfolio()
+
+
 # Node Auxiliary Class and Methods
 @dataclass
 class DataCols:
