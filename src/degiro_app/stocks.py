@@ -35,7 +35,6 @@ class Stocks:
         df["Amount"] = df[cols.number] * df[cols.price]
         df["Shares Sold"] = 0
         df["2M Conflict"] = False
-        return_stock = 0
 
         df.sort_values(by=cols.value_date, inplace=True)
 
@@ -44,9 +43,7 @@ class Stocks:
                 row["Amount EUR"] = df[cols.var][
                     (df[cols.id_order]) == row[cols.id_order]
                 ].sum()
-                df_summary = pd.concat(
-                    [df_summary, pd.DataFrame([row])], ignore_index=True
-                )
+                df_sale = pd.DataFrame([row])
                 shares_to_sell = row[cols.number]
                 shares_sold_so_far = 0
                 bought_amount = []
@@ -71,8 +68,8 @@ class Stocks:
                         (df[cols.id_order] == buy_row[cols.id_order])
                         & (df[cols.desc].str.contains("Costes"))
                     ].sum()
-                    df_summary = pd.concat(
-                        [df_summary, pd.DataFrame([buy_row])], ignore_index=True
+                    df_sale = pd.concat(
+                        [df_sale, pd.DataFrame([buy_row])], ignore_index=True
                     )
 
                     if shares_sold_so_far >= shares_to_sell:
@@ -93,17 +90,18 @@ class Stocks:
                         ]
                     )
                 ) > 0:
-                    df_summary["2M Conflict"].loc[
-                        df_summary[cols.id_order] == row[cols.id_order]
-                    ] = True
+                    df_sale["2M Conflict"] = True
                 else:
                     return_stock += return_of_sale
+
+                df_summary = pd.concat([df_summary, df_sale], ignore_index=True)
         return df_summary
 
     def return_portfolio(
         self,
         cols: DataCols = DataCols(),
     ) -> pd.DataFrame:
+        self.df.sort_values(by=cols.value_date, inplace=True)
         stock_list = self.df[cols.product][
             (self.df[cols.action].str.contains("buy"))
             | (self.df[cols.action].str.contains("sell"))
