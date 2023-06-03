@@ -15,7 +15,7 @@ class Stocks:
         end_date: Optional[str] = None,
     ):
         self.path = path
-        self.df = DataSet(path).data if df is None else df
+        self.df = DataSet(path).data if df is None else DataSet.type_converter(df)
         self.start_date = start_date
         self.end_date = end_date
 
@@ -81,6 +81,7 @@ class Stocks:
                 sell_amount = row["Amount"]
                 return_of_sale = sell_amount + bought_amount
                 twomonth_limit = pd.Timestamp(row[cols.value_date] + timedelta(days=60))
+                df_sale["Year of Sale"] = row[cols.value_date].year
                 if (return_of_sale < 0) and (
                     len(
                         df.loc[
@@ -92,7 +93,7 @@ class Stocks:
                 ) > 0:
                     df_sale["2M Conflict"] = True
                 else:
-                    return_stock += return_of_sale
+                    pass
 
                 df_summary = pd.concat([df_summary, df_sale], ignore_index=True)
         return df_summary
@@ -109,4 +110,11 @@ class Stocks:
         global_df = pd.concat(
             [self.return_on_stock_complete(stock) for stock in stock_list]
         )
-        return global_df
+        return_df = (
+            global_df[global_df["2M Conflict"] == False]
+            .groupby(["Year of Sale", cols.product])["Amount EUR"]
+            .sum()
+            .reset_index()[["Year of Sale", cols.product, "Amount EUR"]]
+            .copy()
+        )
+        return return_df
