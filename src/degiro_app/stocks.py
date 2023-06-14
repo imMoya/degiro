@@ -117,4 +117,22 @@ class Stocks:
             .reset_index()[["Year of Sale", cols.product, "Amount EUR"]]
             .copy()
         )
-        return return_df
+        pos = (
+            global_df[
+                (global_df["2M Conflict"] == False) & (global_df["Amount EUR"] > 0)
+            ]
+            .groupby(["Year of Sale", "Producto"])["Amount EUR"]
+            .sum()
+            .reset_index()[["Amount EUR"]]
+            .copy()
+        )
+        neg = neg = (
+            global_df[
+                (global_df["2M Conflict"] == False) & (global_df["Amount EUR"] < 0)
+            ]
+            .groupby(["Year of Sale", "Producto"])["Amount EUR"]
+            .sum()
+            .reset_index()[["Amount EUR"]]
+            .copy()
+        )
+        return pd.concat([return_df, pos, neg], axis=1)
