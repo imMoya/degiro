@@ -123,16 +123,19 @@ class Stocks:
             ]
             .groupby(["Year of Sale", "Producto"])["Amount EUR"]
             .sum()
-            .reset_index()[["Amount EUR"]]
+            .reset_index()[["Year of Sale", "Producto", "Amount EUR"]]
             .copy()
         )
-        neg = neg = (
+        neg = (
             global_df[
                 (global_df["2M Conflict"] == False) & (global_df["Amount EUR"] < 0)
             ]
             .groupby(["Year of Sale", "Producto"])["Amount EUR"]
             .sum()
-            .reset_index()[["Amount EUR"]]
+            .reset_index()[["Year of Sale", "Producto", "Amount EUR"]]
             .copy()
         )
-        return pd.concat([return_df, pos, neg], axis=1)
+        merged_df = pd.merge(
+            pos, neg, on=["Year of Sale", "Producto"], how="outer"
+        ).merge(return_df, on=["Year of Sale", "Producto"])
+        return merged_df
